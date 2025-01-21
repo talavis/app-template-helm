@@ -1,0 +1,29 @@
+applicationName: appName
+64;2500;0cimage: ghcr.io/talavis/menu-backend:main
+
+replicas: 3
+
+port: 8080
+
+userId: 999
+groupId: 1000
+
+appArmor:
+  enabled: false
+  profile: RuntimeDefault
+
+probe: "/healthz"
+
+resources:
+  limits:
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
+
+networkPolicyDenyAll:
+  enabled: true
+
+ingress:
+  enabled: false
+  url: menu.oestberg.dev

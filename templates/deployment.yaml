@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "k8s-application-template.fullname" . }}
+  labels:
+    {{- include "k8s-application-template.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      {{- include "k8s-application-template.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "k8s-application-template.selectorLabels" . | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      serviceAccountName: {{ include "k8s-application-template.fullname" . }}
+      securityContext:
+        fsGroup: {{ .Values.groupId }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ .Values.image }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.port }}
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 6
+            httpGet:
+              path: {{ .Values.probe }}
+              port: http
+          readinessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: {{ .Values.probe }}
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            {{- if .Values.appArmor.enabled }}
+            appArmorProfile: {{ .Values.appArmor.profile }}
+            {{- end }}
+            seccompProfile:
+              type:
+                RuntimeDefault
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: {{ .Values.userId }}
+            runAsGroup: {{ .Values.groupId }}
+            allowPrivilegeEscalation: false
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - {{ .Values.appName }}
+                    - key: app.kubernetes.io/instance
+                      operator: In
+                      values:
+                        - {{ .Release.Name }}
+                topologyKey: topology.kubernetes.io/hostname
