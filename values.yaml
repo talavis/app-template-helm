@@ -1,5 +1,5 @@
-applicationName: appName
-64;2500;0cimage: ghcr.io/talavis/menu-backend:main
+applicationName: appname
+image: ghcr.io/talavis/menu-backend:main
 
 replicas: 3
 

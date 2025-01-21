@@ -61,7 +61,7 @@ spec:
                     - key: app.kubernetes.io/name
                       operator: In
                       values:
-                        - {{ .Values.appName }}
+                        - {{ .Values.applicationName }}
                     - key: app.kubernetes.io/instance
                       operator: In
                       values:
